@@ -4,84 +4,51 @@ import java.lang.Math;
 import processing.net.*;
 
 Client c;
-Serial port;
+Serial myPort;
 
-GameState gameState = GameState.INIT;
 int serialValue = 0;
+int data = 0;
+boolean firstContact = false;
+int gameState = 0;
 
 void setup() {
   String portName = Serial.list()[2];
-  port = new Serial(this, portName, 9600);
-  
-  size(450, 255);
-  background(204);
-  stroke(0);
-  frameRate(5);
-  
- // c = new Client(this, "130.229.186.236", 12345);
-
+  myPort = new Serial(this, portName, 9600);
+  c = new Client(this, "130.229.1550.24", 12345);
 }
 void draw() {
-  //if (!c.active()) return;
+  serialEvent();
   
-  //int retrievedGameState = 0;
-  //gameState = GameState.values()[retrievedGameState];
-  //port.write(retrievedGameState);
-  setSerialValue();
-  
-  switch(gameState) {
-    case INIT:
-      handleInit();
-      break;
-    case PLAY_1:
-      break;
-    case PLAY_2:
-      break;
-    case PLAY_3:
-      break;
-    case END:
-      break;
+  // Receive data from client
+  if (!c.active()) {
+    String input = c.readString();
+    input = input.substring(0, input.indexOf("\n")); 
+    gameState = Integer.parseInt(input);
+    myPort.write(serialValue);
+  } 
+}
+
+void serialEvent() {
+  String myString = myPort.readStringUntil('\n');
+  // Ignore other bytes than linefeed
+  if (myString != null) {
+    myString = trim(myString);
+ 
+    // Listen for initial contact
+    if (firstContact == false) {
+      if (myString.equals("hello")) {
+        myPort.clear();   
+        firstContact = true;
+        println("HANDSHAKE");
+        myPort.write(gameState);       
+      }
+    }
+    // Successful handshake
+    else {
+      serialValue = int(myString);
+      println(serialValue);
+    }
+    // Ask for additional data
+    myPort.write(gameState);
   }
-  delay(100);
-}
-
-void handleInit() {
-   if (serialValue == 1) {
-     println("1");
-   } else {
-     println("0");
-   }
-}
-
-void setSerialValue() {
-  String val = "";
-  if (port.available() > 0) {
-      val = port.readStringUntil('\n').replaceAll("\\s+",""); 
-  }
-  if (val == null || val.length() == 0) {
-    return;
-  }
-  try {
-    serialValue = Integer.parseInt(val);
-  } catch(Exception e) {
-    return;
-  } //<>//
-}
-
-enum GameState {
-  INIT,
-  PLAY_1,
-  PLAY_2,
-  PLAY_3,
-  END
-}
-
-class ProtocolUp {
-   public int PotentioMeter;
-   public boolean HasCompleted;
-   
-   public ProtocolUp(int potentioMeter, boolean hasCompleted) {
-      this.PotentioMeter = potentioMeter;
-      this.HasCompleted = hasCompleted;
-   }
 }
