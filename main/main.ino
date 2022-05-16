@@ -13,8 +13,8 @@ enum Colors { RED, GREEN, BLUE };
 GameState PREV_STATE = INIT;
 GameState GAME_STATE = INIT;
 Servo servo;
-const int POTENTIO_PIN = A4;
-const int BUZZER_PIN = A5;
+const int POTENTIO_PIN = A2;
+const int BUZZER_PIN = A1;
 const int MOTOR_PIN = 9;
 const int BTNR_PIN = 2;
 const int BTNG_PIN = 3;
@@ -56,7 +56,8 @@ float past_total[] = {0,0,0}; // Past value for x, y, and z
 
 void setup() {
   Serial.begin(9600);
-
+  
+  accel.begin();
   pinMode(POTENTIO_PIN, INPUT);
   pinMode(BTNR_PIN, INPUT_PULLUP);
   pinMode(BTNG_PIN, INPUT_PULLUP);
@@ -107,6 +108,7 @@ void loop() {
       break;
     case PLAY_3:
       servo.write(135);
+      playAccel();
       break;
     case END:
       servo.write(180);
@@ -155,9 +157,9 @@ void playAccel() {
       
   // Check if the rotation is close enough
   if(dist < l_way){
+    playHappySound();
     GAME_STATE = WAITING;
-  }
-  else {
+  } else {
     // Play tone depending on how close the rotation is (higher tone = closer)
     tone(BUZZER_PIN, 1000-dist*50, 50);
     delay(250);
