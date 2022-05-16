@@ -65,7 +65,6 @@ void setup() {
 
   establishContact();
   
-  //accel.begin();
   servo.attach(9);
 }
 
