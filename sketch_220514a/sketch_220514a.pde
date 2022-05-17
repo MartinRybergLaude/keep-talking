@@ -6,7 +6,7 @@ import processing.net.*;
 Client c;
 Serial myPort;
 
-String serialValue = "1";
+String serialValue = "0";
 int data = 0;
 boolean firstContact = false;
 int gameState = 0;
@@ -14,7 +14,7 @@ int gameState = 0;
 void setup() {
   String portName = Serial.list()[2];
   myPort = new Serial(this, portName, 9600);
-  c = new Client(this, "130.229.131.81", 12345);
+  c = new Client(this, "130.229.150.208", 12345);
 }
 void draw() {
   serialEvent();
@@ -23,9 +23,9 @@ void draw() {
   String input = c.readString();
   input = input.substring(0, input.indexOf("\n")); 
   gameState = Integer.parseInt(input);
-  println(serialValue);
+  println("Sent: " + serialValue);
+  println("Received: " + input);
   c.write(serialValue + "\n"); 
-
 }
 
 void serialEvent() {
@@ -33,7 +33,6 @@ void serialEvent() {
   // Ignore other bytes than linefeed
   if (myString != null) {
     myString = trim(myString);
- 
     // Listen for initial contact
     if (firstContact == false) {
       if (myString.equals("hello")) {
@@ -44,9 +43,8 @@ void serialEvent() {
       }
     }
     // Successful handshake
-    else {
+    else if (!myString.equals("hello")) {
       serialValue = myString;
-      println(serialValue);
     }
     // Ask for additional data
     myPort.write(gameState);
