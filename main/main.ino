@@ -106,6 +106,8 @@ const int notes[21][2] = {{NOTE_G4, 300},{NOTE_C4, 300}, {NOTE_C5, 900}, {NOTE_A
   {NOTE_G4, 300}, {NOTE_C4, 300}, {NOTE_DS5, 900}, {NOTE_D5, 300}, {NOTE_G4, 1800},
   {NOTE_G4, 900}, {NOTE_AS4, 300}, {NOTE_A4, 600}, {NOTE_G4, 1800}};
 
+const int winSound[5][2] = {{NOTE_C4, 300},{NOTE_E4, 300}, {NOTE_G4, 900}, {NOTE_C5, 300}, {NOTE_E5, 1800}};
+
 GameState PREV_STATE = INIT;
 GameState GAME_STATE = INIT;
 Servo servo;
@@ -220,9 +222,11 @@ void loop() {
       currentData = 0;
       readSerial();
       playMusic();
+      GAME_STATE = END;
       break;
     case END:
       delay(5000);
+      playWinSound();
       GAME_STATE = INIT;
       break;
     case WAITING:
@@ -274,7 +278,7 @@ void playMusic() {
     float note = notes[currNote][0];
     float noteDelay = notes[currNote][1] * scaled;
     
-    if (noteDelay > bpm-10 && noteDelay < bpm+10) {success = true;}
+    if (noteDelay > bpm-20 && noteDelay < bpm+20) {success = true;}
     
     sound(note, noteDelay); 
   
@@ -350,7 +354,6 @@ void playStart() {
   
   while(!clicked) {
     state = digitalRead(BTNR_PIN);
-    // Serial.println("green mate");
     clicked = buttonClicked(state, prevState);
     prevState = state;
   }
@@ -404,6 +407,12 @@ void playButtons() {
   playHappySound();
   roundNum--;
   }
+}
+
+void playWinSound() {
+   for (int i = 0; i < 5; i++) {
+    sound(winSound[i][0], winSound[i][1]);
+   }
 }
 
 float lowPassFilter(int num, float value, float change){
